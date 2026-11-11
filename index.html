@@ -37,14 +37,39 @@ header p{color:var(--muted);margin:8px 0 0}
 .card .mission p{font-size:16px}
 footer{text-align:center;padding:8px 16px 32px}
 footer button{margin:4px;background:none;border:1px solid var(--muted);color:var(--muted);border-radius:99px;padding:6px 14px;cursor:pointer}
+body{background:radial-gradient(ellipse at 50% 120%,rgba(244,126,182,.18),transparent 55%),radial-gradient(ellipse at 10% 0%,rgba(31,182,240,.14),transparent 45%),#000;background-attachment:fixed}
+#snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+header,.grid,.foot{position:relative;z-index:1}
+h1::before{content:"\2B50  "}
+h1::after{content:" \1F384"}
+.lights{position:relative;display:flex;justify-content:space-between;padding:0 12px;margin-bottom:10px}
+.lights::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:#444}
+.lights i{display:block;width:12px;height:18px;border-radius:50% 50% 50% 50%/40% 40% 60% 60%;background:var(--c);box-shadow:0 0 12px var(--c);animation:tw 1.6s infinite ease-in-out}
+.lights i:nth-child(odd){margin-top:8px}
+@keyframes tw{50%{opacity:.35}}
+.door{overflow:hidden}
+.door::before,.door::after{content:"";position:absolute;background:var(--c);opacity:.28}
+.door::before{left:50%;top:0;bottom:0;width:14px;margin-left:-7px}
+.door::after{top:50%;left:0;right:0;height:14px;margin-top:-7px}
+.door .num{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:50%;background:#000;border:2px solid var(--c);font-size:22px}
+.door small{z-index:1}
+.door.open::before,.door.open::after{background:#000;opacity:.22}
+.door:not(.locked):not(.open){animation:glow 2s infinite ease-in-out}
+@keyframes glow{50%{box-shadow:0 0 18px var(--c)}}
+.card{box-shadow:0 0 28px -4px var(--c)}
+.foot{text-align:center;padding:8px 16px 32px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.lights i,.door:not(.locked):not(.open){animation:none}}
 </style>
 </head>
 <body>
+<canvas id="snow"></canvas>
 <header>
+<div class="lights" id="lights"></div>
 <h1><span>Q</span><span>W</span><span>E</span><span>R</span><span id="ttl"> Advent Calendar</span></h1>
-<p id="sub">A new little door every day ✨</p>
+<p id="sub">A new little door every day 🎄✨</p>
 </header>
 <main class="grid" id="grid"></main>
+<div class="foot">Merry QWERmas! 🎄</div>
 <div class="modal" id="modal"><div class="card" id="card"></div></div>
 <div class="toast" id="toast"></div>
 
@@ -83,7 +108,7 @@ const CONTENT = {
 };
 const COLORS = ["#ffffff","#f47eb6","#1fb6f0","#b9d96c"];
 const I18N = {
-  en:{sub:"A new little door every day ✨",title:"Advent Calendar",locked:n=>"Not yet! This door opens on December "+n+".",prevOn:"End preview mode",prevOff:"Preview mode: unlock all doors",close:"Close",video:"▶ Watch video",door:n=>"Door "+n,empty:"No content added yet."}
+  en:{sub:"A new little door every day 🎄✨",title:"Advent Calendar",locked:n=>"Not yet! This door opens on December "+n+".",prevOn:"End preview mode",prevOff:"Preview mode: unlock all doors",close:"Close",video:"▶ Watch video",door:n=>"Door "+n,empty:"No content added yet."}
 };
 const lang = "en";
 const T = () => I18N[lang];
@@ -105,7 +130,7 @@ function render(){
     const un = isUnlocked(n);
     b.className = "door" + (opened[n] ? " open" : "") + (un ? "" : " locked");
     b.style.setProperty("--c", COLORS[(n-1) % 4]);
-    b.innerHTML = n + (un ? "" : "<small>🔒</small>");
+    b.innerHTML = '<span class="num">' + n + "</span>" + (un ? "" : "<small>🔒</small>");
     b.onclick = () => openDoor(n, b);
     grid.appendChild(b);
   }
@@ -162,6 +187,21 @@ function applyLang(){
   closeModal();
   render();
 }
+(function(){
+  const L = document.getElementById("lights");
+  for (let i = 0; i < 14; i++){ const b = document.createElement("i"); b.style.setProperty("--c", COLORS[i % 4]); b.style.animationDelay = (i * 0.25) + "s"; L.appendChild(b); }
+  const cv = document.getElementById("snow");
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches){ cv.style.display = "none"; return; }
+  const ctx = cv.getContext("2d"); let W, H; const flakes = [];
+  const size = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+  size(); addEventListener("resize", size);
+  for (let i = 0; i < 70; i++) flakes.push({x: Math.random()*W, y: Math.random()*H, r: 1+Math.random()*2.6, v: .4+Math.random()*.9, d: Math.random()*6.28, c: i % 6 === 0 ? COLORS[1 + ((i/6)|0) % 3] : "#fff"});
+  (function tick(){
+    ctx.clearRect(0, 0, W, H); ctx.globalAlpha = .75;
+    for (const f of flakes){ f.y += f.v; f.d += .01; f.x += Math.sin(f.d)*.4; if (f.y > H+5){ f.y = -5; f.x = Math.random()*W; } ctx.fillStyle = f.c; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill(); }
+    requestAnimationFrame(tick);
+  })();
+})();
 applyLang();
 </script>
 </body>
