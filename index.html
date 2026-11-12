@@ -59,6 +59,18 @@ h1::after{content:" \1F384"}
 .card{box-shadow:0 0 28px -4px var(--c)}
 .foot{text-align:center;padding:8px 16px 32px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.lights i,.door:not(.locked):not(.open){animation:none}}
+#music{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:5;background:#000;color:#fff;border:2px solid var(--pink);border-radius:99px;padding:8px 14px;font:700 14px "Trebuchet MS",system-ui,sans-serif;cursor:pointer}
+#music:hover{background:var(--pink);color:#000}
+.radio{position:relative;z-index:1;max-width:260px;margin:28px auto 8px;padding:14px 14px 12px;border:3px solid var(--blue);border-radius:24px;background:#0b0b0b;text-align:center;box-shadow:0 0 22px -4px var(--blue)}
+.radio h3{margin:0 0 8px;font-size:18px;color:var(--pink);letter-spacing:.03em}
+.radio .frame{width:200px;height:200px;margin:0 auto;border-radius:16px;overflow:hidden;border:2px solid var(--lime)}
+.radio iframe{display:block}
+.radio p{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.eq{display:flex;gap:5px;justify-content:center;align-items:flex-end;height:18px;margin-bottom:10px}
+.eq i{width:6px;height:4px;border-radius:3px;background:var(--c)}
+.radio.playing .eq i{animation:eq .8s infinite ease-in-out;animation-delay:var(--d)}
+@keyframes eq{50%{height:18px}}
+@media (prefers-reduced-motion:reduce){.radio.playing .eq i{animation:none}}
 </style>
 </head>
 <body>
@@ -69,6 +81,8 @@ h1::after{content:" \1F384"}
 <p id="sub">A new little door every day 🎄✨</p>
 </header>
 <main class="grid" id="grid"></main>
+<button id="music" hidden aria-label="Turn background music on or off">🔊 Music on</button>
+<section class="radio" id="radio" hidden><h3>🎵 QWERmas Radio</h3><div class="eq"><i style="--c:#fff;--d:0.0s"></i><i style="--c:#f47eb6;--d:0.1s"></i><i style="--c:#1fb6f0;--d:0.3s"></i><i style="--c:#b9d96c;--d:0.4s"></i><i style="--c:#f47eb6;--d:0.6s"></i></div><div class="frame"><div id="ytp"></div></div><p>Press play, or use the button in the corner.</p></section>
 <div class="foot">Merry QWERmas! 🎄</div>
 <div class="modal" id="modal"><div class="card" id="card"></div></div>
 <div class="toast" id="toast"></div>
@@ -103,7 +117,7 @@ const CONTENT = {
 20:{title:"Something to Keep Close ✨",text:"Not every gift needs to be loud or colorful. Sometimes, something small and simple can be just as special.\nToday’s surprise is a necklace. Something you can wear, keep close, and hopefully enjoy for a long time.\nJust a little something from me to you. 💜",mission:["Mini Mission: Your Personal Soundtrack","Choose a QWER song that means something special to you.\nIt doesn’t have to be your favorite song. Just one that brings back a memory, makes you feel understood, or reminds you of something important."],video:["Today’s video","https://www.youtube.com/watch?v=pifz9JH1Re8"]},
 21:{title:"The Siyeon Appreciation Society 🐹💚",text:"ATTENTION, ATTENTION! Today’s door is dedicated to someone very important.\nSIYEON!\nSince she’s your bias, I couldn’t possibly make a QWER Advent calendar without giving her another special moment.\nToday’s magnet and photocard are a little addition to your Siyeon collection.",mission:["Mini Mission: Certified Siyeon Enthusiast","List three reasons why Siyeon is your bias.\nThen attempt to choose your absolute favorite Siyeon moment. Good luck with that second part.\nThe Officially Unofficial Siyeon Appreciation Society approves this message."],video:["Bonus video","https://www.youtube.com/shorts/SVUCVZe9e_o"]},
 22:{title:"Two Days to Go! 🎄",text:"Can you believe we’re almost at Christmas already?!\nToday’s door brings you some more stickers and a photocard. Another little surprise before we reach the final two days!\nI hope opening these gifts has been as much fun for you as creating them has been for me. And trust me, I’ve saved some particularly special things for the end.",mission:["Mini Mission: The QWER Meme Factory","Choose your funniest QWER photo.\nNow give it the most ridiculous caption you can possibly think of.\nBonus points if the result makes absolutely no sense without context."],video:["Today’s soundtrack","https://youtu.be/-C6UVoWOdug?si=bkOD2sOoFzsV5Cs5"]},
-23:{title:"The Sacred Siyeon Shrine 🐹🕯️",text:"Okay. Listen.\nI know this might look slightly ridiculous, but hear me out.\nEvery dedicated Siyeon fan deserves a tiny shrine, right? RIGHT?!\nToday’s gift is your very own portable Siyeon appreciation station! Open it, display it, admire it, and give it the respect it deserves.\nIs this a little excessive? Maybe.\nAm I sorry? ABSOLUTELY NOT.",mission:["Mini Mission: The Grand Shrine Opening","Find the perfect place to display your tiny Siyeon shrine. Then perform the official opening ceremony:\n1. Open the shrine dramatically.\n2. Say “All hail the hamster queen!”\n3. Admire Siyeon’s greatness for at least five seconds.\n4. Congratulations. The shrine is now officially operational.\nPlease note that this shrine is not guaranteed to improve your photocard pulls, but we can dream."],video:["Today’s Short","https://www.youtube.com/shorts/kdSYMHBEf9w"]},
+23:{title:"The Sacred Siyeon Shrine 🐹🕯️",text:"Okay, listen.\nI know this might seem slightly ridiculous, but hear me out.\nEvery dedicated Siyeon fan deserves a proper shrine, right? RIGHT?!\nToday’s gift is your very own Siyeon appreciation shrine, dedicated to our beloved hamster queen!\nDisplay it proudly, admire it regularly, and give it the respect it deserves.\nIs this a little excessive? Maybe.\nAm I sorry? ABSOLUTELY NOT.",mission:["Mini Mission: The Grand Shrine Opening","It’s time for the official inauguration of your Siyeon shrine!\n1. Find the perfect place to display your shrine.\n2. Unveil it with an appropriately dramatic gesture.\n3. Officially declare: “All hail the hamster queen!”\n4. Spend at least ten seconds admiring Siyeon’s greatness.\n5. Congratulations! Your shrine is now officially open for worship. 🐹👑\nDisclaimer: This shrine is not guaranteed to improve your photocard pulls, but it may increase your daily happiness levels by approximately 900%."],video:["Today’s Short","https://youtube.com/shorts/kdSYMHBEf9w?si=vXc5SsGgX1jiUif2"]},
 24:{title:"MERRY QWER-MAS! 🃏",text:"We’ve officially reached the final day!\nAnd I wanted to end this little adventure with something special.\nIntroducing... ALL IN FOR QWER!\nYour very own QWER-themed poker deck! Whether you’re bluffing your way to victory, going all in, or simply admiring the cards, I hope this game brings you lots of fun.",mission:["Final Mission: The Ultimate QWERkerface","Look at your favorite QWER photocard.\nNow try to maintain a completely serious poker face for ten seconds.\nNo smiling. No laughing. Absolutely no fangirling.\nIf you fail, congratulations. You’re a perfectly normal QWER fan!"],video:["Final Short","https://www.youtube.com/shorts/O_44CUsZW28"],after:"Before we finish, I want to say something.\nThank you for letting me share this little creative project with you. What started as a random idea turned into something I genuinely loved making.\nI know we’re just two people who met through the internet, but I wanted to create something that would bring a little happiness into your December.\nI hope these 24 days gave you something to smile about, a few good laughs, and plenty of QWER moments.\nMerry Christmas! And remember...\nKeep your QWERkerface. 🃏🤍🩷🩵💚"}
 };
 const COLORS = ["#ffffff","#f47eb6","#1fb6f0","#b9d96c"];
@@ -201,6 +215,29 @@ function applyLang(){
     for (const f of flakes){ f.y += f.v; f.d += .01; f.x += Math.sin(f.d)*.4; if (f.y > H+5){ f.y = -5; f.x = Math.random()*W; } ctx.fillStyle = f.c; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill(); }
     requestAnimationFrame(tick);
   })();
+})();
+(function(){
+  const VID = "FwhFhN6_kG4", btn = document.getElementById("music");
+  let want = true, player = null, ready = false, gesture = false;
+  try { if (localStorage.getItem("qwer-music") === "off") want = false; } catch (e) {}
+  const label = () => { btn.textContent = want ? "\uD83D\uDD0A Music on" : "\uD83D\uDD07 Music off"; };
+  function sync(){ if (!ready || !gesture) return; if (want) player.playVideo(); else player.pauseVideo(); }
+  btn.onclick = () => { want = !want; try { localStorage.setItem("qwer-music", want ? "on" : "off"); } catch (e) {} label(); sync(); };
+  addEventListener("pointerdown", () => { gesture = true; sync(); }, {once:true});
+  const radio = document.getElementById("radio");
+  window.onYouTubeIframeAPIReady = function(){
+    radio.hidden = false;
+    player = new YT.Player("ytp", {width:200, height:200, videoId:VID, playerVars:{loop:1, playlist:VID, controls:1, playsinline:1, rel:0},
+      events:{
+        onReady:function(){ ready = true; player.setVolume(60); btn.hidden = false; label(); sync(); },
+        onStateChange:function(e){
+          if (e.data === 1) want = true; else if (e.data === 2) want = false; else return;
+          radio.classList.toggle("playing", want); label();
+          try { localStorage.setItem("qwer-music", want ? "on" : "off"); } catch (err) {}
+        }
+      }});
+  };
+  const sc = document.createElement("script"); sc.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(sc);
 })();
 applyLang();
 </script>
