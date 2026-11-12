@@ -91,8 +91,8 @@ h1::after{content:" \1F384"}
 <p id="sub">A new little door every day 🎄✨</p>
 </header>
 <main class="grid" id="grid"></main>
-<button id="music" hidden aria-label="Turn background music on or off">🔊 Music on</button>
-<section class="radio" id="radio"><div class="rbody"><h3>🎵 QWERmas Radio</h3><div class="eq"><i style="--c:#fff;--d:0.0s"></i><i style="--c:#f47eb6;--d:0.1s"></i><i style="--c:#1fb6f0;--d:0.3s"></i><i style="--c:#b9d96c;--d:0.4s"></i><i style="--c:#f47eb6;--d:0.6s"></i></div><div class="frame"><iframe id="ytp" width="192" height="108" src="https://www.youtube.com/embed/FwhFhN6_kG4?enablejsapi=1&amp;loop=1&amp;playlist=FwhFhN6_kG4&amp;playsinline=1&amp;rel=0" title="QWERmas Radio" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><p>Press play, or use the button in the corner.</p></div><button class="rtab" id="rtab" aria-label="Show or hide player">‹</button></section>
+<button id="music" hidden aria-label="Turn background music on or off">🔇 Music off</button>
+<section class="radio min" id="radio"><div class="rbody"><h3>🎵 QWERmas Radio</h3><div class="eq"><i style="--c:#fff;--d:0.0s"></i><i style="--c:#f47eb6;--d:0.1s"></i><i style="--c:#1fb6f0;--d:0.3s"></i><i style="--c:#b9d96c;--d:0.4s"></i><i style="--c:#f47eb6;--d:0.6s"></i></div><div class="frame"><iframe id="ytp" width="192" height="108" src="https://www.youtube.com/embed/FwhFhN6_kG4?enablejsapi=1&amp;loop=1&amp;playlist=FwhFhN6_kG4&amp;playsinline=1&amp;rel=0" title="QWERmas Radio" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><p>Press play, or use the button in the corner.</p></div><button class="rtab" id="rtab" aria-label="Show or hide player">›</button></section>
 <div class="foot">Merry QWERmas! 🎄</div>
 <div class="modal" id="modal"><div class="card" id="card"></div></div>
 <div class="toast" id="toast"></div>
@@ -228,12 +228,10 @@ function applyLang(){
 })();
 (function(){
   const VID = "FwhFhN6_kG4", btn = document.getElementById("music");
-  let want = true, player = null, ready = false, gesture = false;
-  try { if (localStorage.getItem("qwer-music") === "off") want = false; } catch (e) {}
+  let want = false, player = null, ready = false, gesture = false;
   const label = () => { btn.textContent = want ? "\uD83D\uDD0A Music on" : "\uD83D\uDD07 Music off"; };
   function sync(){ if (!ready || !gesture) return; if (want) player.playVideo(); else player.pauseVideo(); }
-  btn.onclick = () => { want = !want; try { localStorage.setItem("qwer-music", want ? "on" : "off"); } catch (e) {} label(); sync(); };
-  addEventListener("pointerdown", () => { gesture = true; sync(); }, {once:true});
+  btn.onclick = () => { gesture = true; want = !want; label(); sync(); };
   const radio = document.getElementById("radio"), tab = document.getElementById("rtab");
   tab.onclick = () => { const m = radio.classList.toggle("min"); tab.textContent = m ? "\u203A" : "\u2039"; };
   window.onYouTubeIframeAPIReady = function(){
@@ -243,7 +241,6 @@ function applyLang(){
         onStateChange:function(e){
           if (e.data === 1) want = true; else if (e.data === 2) want = false; else return;
           radio.classList.toggle("playing", want); label();
-          try { localStorage.setItem("qwer-music", want ? "on" : "off"); } catch (err) {}
         }
       }});
   };
