@@ -81,9 +81,17 @@ h1::after{content:" \1F384"}
 @keyframes eq{50%{height:12px}}
 .rtab{background:var(--blue);color:#000;border:0;border-radius:0 14px 14px 0;width:26px;margin:-8px -10px -8px 10px;font:700 20px system-ui,sans-serif;cursor:pointer}
 .foot{padding-bottom:150px}
+#aurora{position:fixed;left:-10%;right:-10%;top:0;height:45vh;background:linear-gradient(110deg,transparent 15%,rgba(31,182,240,.16) 35%,rgba(185,217,108,.11) 55%,rgba(244,126,182,.16) 75%,transparent 90%);filter:blur(36px);pointer-events:none;z-index:0;animation:drift 16s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translateX(9%) skewX(-8deg)}}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;animation:tw 2.4s infinite ease-in-out}
+#scene{position:fixed;left:0;bottom:0;width:100%;height:240px;pointer-events:none;z-index:0}
+.bulb{animation:tw 1.8s infinite ease-in-out;filter:drop-shadow(0 0 4px var(--g,#fff))}
+@media (prefers-reduced-motion:reduce){#aurora,.star,.bulb{animation:none}}
 </style>
 </head>
 <body>
+<div id="aurora"></div><div id="stars"></div><svg id="scene" aria-hidden="true"></svg>
 <canvas id="snow"></canvas>
 <header>
 <div class="lights" id="lights"></div>
@@ -245,6 +253,50 @@ function applyLang(){
       }});
   };
   const sc = document.createElement("script"); sc.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(sc);
+})();
+(function(){
+  const NS = "http://www.w3.org/2000/svg", svg = document.getElementById("scene"), stars = document.getElementById("stars");
+  let seed = 7, lastW = 0;
+  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
+  const mk = (tag, a, p) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); (p || svg).appendChild(e); return e; };
+  const bulb = (g, cx, cy, col, r) => { const c = mk("circle", {cx:cx, cy:cy, r:r, fill:col, "class":"bulb"}, g); c.style.setProperty("--g", col); c.style.animationDelay = (rnd()*2) + "s"; };
+  for (let i = 0; i < 45; i++){
+    const d = document.createElement("div"); d.className = "star";
+    d.style.left = (rnd()*100) + "%"; d.style.top = (rnd()*62) + "%"; d.style.animationDelay = (rnd()*3) + "s";
+    if (i % 9 === 0) d.style.background = COLORS[1 + ((i/9)|0) % 3];
+    stars.appendChild(d);
+  }
+  const TIERS = [[-92,-8,68,"#f47eb6"],[-128,-58,50,"#1fb6f0"],[-158,-100,34,"#ffffff"]];
+  function build(){
+    if (innerWidth === lastW) return; lastW = innerWidth; seed = 11;
+    const W = innerWidth, H = 240; svg.innerHTML = ""; svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    const defs = mk("defs", {}), gr = mk("linearGradient", {id:"gt", x1:0, y1:0, x2:0, y2:1}, defs);
+    mk("stop", {offset:0, "stop-color":"#4a6b25"}, gr); mk("stop", {offset:1, "stop-color":"#16210c"}, gr);
+    mk("path", {d:"M0 " + H + "V150Q" + (W*.2) + " 100 " + (W*.4) + " 140T" + (W*.8) + " 130T" + W + " 112V" + H + "Z", fill:"rgba(31,182,240,.13)"});
+    mk("path", {d:"M0 " + H + "V196Q" + (W*.25) + " 160 " + (W*.5) + " 192T" + W + " 176V" + H + "Z", fill:"rgba(244,126,182,.12)", stroke:"rgba(255,255,255,.5)", "stroke-width":2});
+    const n = Math.max(3, Math.min(9, Math.round(W/170)));
+    for (let i = 0; i < n; i++){
+      const x = (i + .5) * W / n + (rnd()-.5)*40, sc = .55 + rnd()*.5;
+      const g = mk("g", {transform:"translate(" + x + " 228) scale(" + sc + ")", opacity: sc < .7 ? .75 : 1});
+      mk("ellipse", {cx:0, cy:10, rx:34, ry:6, fill:"#fff", opacity:.8}, g);
+      mk("rect", {x:-8, y:-14, width:16, height:24, fill:"#2b2b2b"}, g);
+      TIERS.forEach(([a, b, w, gc], t) => {
+        mk("path", {d:"M0 " + a + "L" + w + " " + b + "Q" + (w/2) + " " + (b+12) + " 0 " + (b-4) + "Q" + (-w/2) + " " + (b+12) + " " + (-w) + " " + b + "Z", fill:"url(#gt)"}, g);
+        mk("path", {d:"M" + (-w) + " " + b + "L0 " + a + "L" + w + " " + b, fill:"none", stroke:"#fff", "stroke-width":3, "stroke-linecap":"round", "stroke-linejoin":"round", opacity:.9}, g);
+        const ya = a + (b - a) * .62, wy = w * (ya - a) / (b - a);
+        mk("path", {d:"M" + (-wy) + " " + ya + "Q0 " + (ya + 18) + " " + wy + " " + ya, fill:"none", stroke:gc, "stroke-width":2.5, opacity:.9}, g);
+        [.12, .37, .63, .88].forEach((u, k) => {
+          const px = (1-u)*(1-u)*(-wy) + u*u*wy, py = (1-u)*(1-u)*ya + 2*(1-u)*u*(ya+18) + u*u*ya;
+          bulb(g, px, py, COLORS[(i + t + k) % 4], 3.4);
+        });
+        bulb(g, -w*.88, b - 1, COLORS[(i + t + 1) % 4], 5); bulb(g, w*.88, b - 1, COLORS[(i + t + 3) % 4], 5);
+      });
+      const pts = [];
+      for (let q = 0; q < 10; q++){ const r = q % 2 ? 4.2 : 10, an = -Math.PI/2 + q*Math.PI/5; pts.push((Math.cos(an)*r).toFixed(1) + "," + (-168 + Math.sin(an)*r).toFixed(1)); }
+      const st = mk("polygon", {points:pts.join(" "), fill:"#fff", "class":"bulb"}, g); st.style.setProperty("--g", "#fff");
+    }
+  }
+  build(); addEventListener("resize", build);
 })();
 applyLang();
 </script>
